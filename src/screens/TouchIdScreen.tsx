@@ -30,7 +30,9 @@ export default function TouchIdScreen({navigation}: RootScreenNavigationProps) {
             onPress={() => {}}
             style={{width: '100%'}}
           />
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('PinCode', {hasPin: true})}
+            style={{padding: 10}}>
             <Text style={[FONTS.body3, {color: COLORS.primary}]}>ข้าม</Text>
           </TouchableOpacity>
         </View>

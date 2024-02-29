@@ -10,13 +10,15 @@ import DeleteIcon from 'react-native-vector-icons/Feather';
 import FingerPrintIcon from 'react-native-vector-icons/Ionicons';
 import {RootScreenNavigationProps} from '../../type';
 import {COLORS, FONTS} from '../constants';
-import {Button} from '../components';
+import {ConfirmModal} from '../components';
 
 const TEXT_TITLE = [
   'ตั้งรหัส PIN CODE',
   'ยืนยันรหัส PIN CODE',
   'กรุณากรอกรหัส PIN',
 ];
+
+const PIN_CODE_DEFAULT = ['', '', '', '', '', ''];
 
 const PIN_CODE_PATTERN = [
   {id: '1'},
@@ -33,14 +35,30 @@ const PIN_CODE_PATTERN = [
   {id: 'delete'},
 ];
 
-export default function PinCodeScreen({navigation}: RootScreenNavigationProps) {
+export default function PinCodeScreen({
+  navigation,
+  route,
+}: RootScreenNavigationProps) {
+  const hasPin = route.params?.hasPin;
+
   const [step, setStep] = useState(0);
-  const [pinCode, setPinCode] = useState(['', '', '', '', '', '']);
-  const [confirmPinCode, setConfirmPinCode] = useState(['', '', '', '', '', '']);
+  const [pinCode, setPinCode] = useState(PIN_CODE_DEFAULT);
+  const [newPinCode, setNewPinCode] = useState(PIN_CODE_DEFAULT);
+  const [confirmPinCode, setConfirmPinCode] = useState(PIN_CODE_DEFAULT);
+  const [openModal, setOpenModal] = useState(false);
+
+  useEffect(() => {
+    if (hasPin) {
+      setOpenModal(true);
+      setNewPinCode(PIN_CODE_DEFAULT);
+      setConfirmPinCode(PIN_CODE_DEFAULT);
+      setStep(2);
+    }
+  }, [hasPin]);
 
   useEffect(() => {
     handleStep();
-  }, [pinCode, confirmPinCode]);
+  }, [newPinCode, confirmPinCode]);
 
   const onPressPinCode = (id: string) => {
     if (id === 'touchId') {
@@ -49,17 +67,21 @@ export default function PinCodeScreen({navigation}: RootScreenNavigationProps) {
 
     if (id === 'delete') {
       if (step === 0) {
-        handleDeletePinState(pinCode, setPinCode);
+        handleDeletePinState(newPinCode, setNewPinCode);
       } else if (step === 1) {
         handleDeletePinState(confirmPinCode, setConfirmPinCode);
+      } else if (step === 2) {
+        handleDeletePinState(pinCode, setPinCode);
       }
     }
 
     if (id !== 'touchId' && id !== 'delete') {
       if (step === 0) {
-        handleSetPinState(id, pinCode, setPinCode);
+        handleSetPinState(id, newPinCode, setNewPinCode);
       } else if (step === 1) {
         handleSetPinState(id, confirmPinCode, setConfirmPinCode);
+      } else if (step === 2) {
+        handleSetPinState(id, pinCode, setPinCode);
       }
     }
   };
@@ -94,13 +116,16 @@ export default function PinCodeScreen({navigation}: RootScreenNavigationProps) {
   };
 
   const handleStep = () => {
-    if (!pinCode.includes('') && step === 0) {
+    if (!newPinCode.includes('') && step === 0) {
       setStep(1);
-      setConfirmPinCode(['', '', '', '', '', '']);
+      setConfirmPinCode(PIN_CODE_DEFAULT);
     }
 
     if (!confirmPinCode.includes('') && step === 1) {
       navigation.navigate('TouchId');
+    }
+
+    if (!pinCode.includes('') && step === 2) {
     }
   };
 
@@ -109,12 +134,15 @@ export default function PinCodeScreen({navigation}: RootScreenNavigationProps) {
       <View style={styles.titleContainer}>
         <Text style={styles.codeTitle}>{TEXT_TITLE[step]}</Text>
         <View style={styles.codeContainer}>
-          {(step === 0 ? pinCode : step === 1 ? confirmPinCode : []).map(
-            (pin, index) => {
-              const style = pin != '' ? styles.code2 : styles.code1;
-              return <View key={index} style={style} />;
-            },
-          )}
+          {(step === 0
+            ? newPinCode
+            : step === 1
+            ? confirmPinCode
+            : pinCode
+          ).map((pin, index) => {
+            const style = pin != '' ? styles.code2 : styles.code1;
+            return <View key={index} style={style} />;
+          })}
         </View>
       </View>
 
@@ -131,14 +159,18 @@ export default function PinCodeScreen({navigation}: RootScreenNavigationProps) {
               id === 'touchId' || id === 'delete' ? {borderWidth: 0} : null,
             ]}>
             {id === 'touchId' ? (
+              // Touch ID pin
               <FingerPrintIcon
                 name="finger-print"
                 size={40}
                 color={COLORS.primary}
+                style={step !== 2 ? {display: 'none'} : null}
               />
             ) : id === 'delete' ? (
+              // Delete pin
               <DeleteIcon name="delete" size={30} color={COLORS.gray2} />
             ) : (
+              // Number pin
               <Text style={styles.textPad}>{id}</Text>
             )}
           </TouchableHighlight>
@@ -148,6 +180,15 @@ export default function PinCodeScreen({navigation}: RootScreenNavigationProps) {
       <TouchableOpacity>
         <Text style={styles.codeTitle}>ลืมรหัส PIN ?</Text>
       </TouchableOpacity>
+
+      <ConfirmModal
+        isOpen={openModal}
+        setIsOpen={setOpenModal}
+        icon="finger-print"
+        title={`Touch ID for\n"CGS Application"`}
+        subtitle={`เข้าใช้งานด้วย Touch ID หรือ\nยกเลิกเพื่อกลับไปใช้รหัส PIN`}
+        confirmText="Enter Password"
+      />
     </View>
   );
 }

@@ -8,7 +8,7 @@ export type RootStackParamList = {
   ConfirmOtp: undefined;
   ForgotPassword: undefined;
   ResetSuccess: undefined;
-  PinCode: undefined;
+  PinCode: {hasPin: boolean};
   TouchId: undefined;
 };
 

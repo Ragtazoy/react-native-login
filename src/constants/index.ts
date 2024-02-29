@@ -2,10 +2,12 @@ import {TextStyle} from 'react-native/types';
 
 export const COLORS = {
   primary: '#118ab2',
-  black: '#212529',
+  black: '#181b1e',
   gray: '#ced4da',
   gray2: '#6c757d',
   white: '#fff',
+  danger: '#dc3545',
+  info:'#0c63e7'
 };
 
 export const FONTS: {[key: string]: TextStyle} = {
